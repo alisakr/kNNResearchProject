@@ -6,7 +6,7 @@ Created on Jul 27, 2014
 import scipy.special as sps
 import numpy as np
 import matplotlib.pyplot as plt
-import collections 
+import collections
 from collections import OrderedDict
 import re
 import nltk
@@ -25,13 +25,10 @@ from tfidf import tfidf
 import operator
 from wordStemmer import *
 
-
-
 class createCollection(object):
     '''
     classdocs
     '''
-
 
     def __init__(self, dataset):
         '''
@@ -54,12 +51,10 @@ class createCollection(object):
         self.centroidRight = 0
         self.weightedRight = 0
         self.harmonicMean = False
-        self.averageCenterLen = 0.0 
+        self.averageCenterLen = 0.0
         self.centers = None
         self.centerMap = {}
 
-    
-    
     def setTrainingDocs(self):
         i = 0
         datasetLen = 0
@@ -73,7 +68,7 @@ class createCollection(object):
             for word in words:
                 word = stemmedWord(word)
                 if fileWords.has_key(word) is False:
-                    fileWords[word] = 0 
+                    fileWords[word] = 0
                     if self.wordDF.has_key(word):
                         self.wordDF[word] +=1
                     else:
@@ -85,26 +80,24 @@ class createCollection(object):
             self.trainDocs[i] = document
             i+=1
         self.meanDocLen = float(datasetLen)/float(self.numDocs)
-    
 
     def simpleKNN(self, k, query, weighted=False):
         sortedScores = self.getDocSimilarityScores(query)
         self.getCategory(k, query, sortedScores, weighted)
-    
+
     def getMaxCenterScore(self, k, sortedScores):
         i = 0
-        maxScore = 0.0 
+        maxScore = 0.0
         for key, value in sortedScores:
             if self.trainDocs[key].centerScore > maxScore:
-               maxScore = self.trainDocs[key].centerScore
+                maxScore = self.trainDocs[key].centerScore
             i += 1
             if i >= k:
                 return maxScore
-    def getMaxQueryScore(self, sortedScores):        
+    def getMaxQueryScore(self, sortedScores):
         for key, value in sortedScores:
             return value
-        
-    
+
     def getAverageCenterLen(self, centers):
         sum = 0.0
         numCenters = 0
@@ -114,7 +107,7 @@ class createCollection(object):
         averageCenterLen = sum/float(numCenters)
         self.averageCenterLen = averageCenterLen
         return averageCenterLen
-    
+
     def neighborWeight(self, docCenterScore, docQueryScore, key, beta, selection = False, centerScores = []):
         docCenterScore *= beta
         docQueryScore *= (1.0-beta)
@@ -136,8 +129,7 @@ class createCollection(object):
             score = 2.0*docCenterScore*docQueryScore/sum
             return score
         return sum
-    
-    
+
     def harmonicCenterScoreList(self, k, sortedScores):
         i = 0
         centerScores = {}
@@ -156,9 +148,9 @@ class createCollection(object):
             if i >= (2*k -1):
                 break
             queryScores[key] = value
-            centerScores[key] = self.trainDocs[key].centerScore  
+            centerScores[key] = self.trainDocs[key].centerScore
             if centerScores[key] > maxCenterScore:
-                maxCenterScore = centerScores[key]          
+                maxCenterScore = centerScores[key]
             i += 1
         for key in centerScores:
             centerScores[key] = centerScores[key]/maxCenterScore
@@ -174,8 +166,7 @@ class createCollection(object):
             centerList.append(docID)
             i += 1
         return centerList
-    
-    
+
     def centerScoreList(self, k, sortedScores):
         i = 0
         centerList = []
@@ -183,7 +174,7 @@ class createCollection(object):
         numAdded = 0
         for key, value in sortedScores:
             if numAdded >= k:
-                break            
+                break
             rank = self.centers[self.trainDocs[key].categoryName].getDocPercentile(key)
             cutOff = 100/(2*k)
             if self.flip:
@@ -192,17 +183,16 @@ class createCollection(object):
                 if numAdded == 0:
                     maxQuery += value
                 centerList.append(key)
-                numAdded += 1  
+                numAdded += 1
             i += 1
         return centerList
-    
+
     def setCenterScores(self):
         if self.centersCalculated:
             return
         averageCenterLen = self.getAverageCenterLen(self.centers)
         self.updateCenterScores(self.centers, averageCenterLen)
-            
-    
+
     def centroidKNN(self, k, query, beta, selection=False):
         sortedScores = self.getDocSimilarityScores(query)
         averageCenterLen = self.getAverageCenterLen(self.centers)
@@ -225,7 +215,7 @@ class createCollection(object):
                 maxQuerySimilarity = value + 0.000001
             docQueryScore = 100.0*((0.000001 + value)/maxQuerySimilarity)
             docCenterScore = 100.0*((self.trainDocs[key].centerScore + 0.000001)/maxCenterScore)
-            neighborWeight = self.neighborWeight(docCenterScore, docQueryScore, key, beta, selection, centerScoreList) 
+            neighborWeight = self.neighborWeight(docCenterScore, docQueryScore, key, beta, selection, centerScoreList)
             if tags.has_key(category):
                 tags[category] +=  1.0 + neighborWeight
             else:
@@ -235,7 +225,7 @@ class createCollection(object):
                 if key == lastelement:
                     break
         query.inferredCategory = self.maxCategory(tags)
-    
+
     def getDocSimilarityScores(self, query):
         similarityMap = {}
         for j in xrange(len(self.trainDocs)):
@@ -245,9 +235,7 @@ class createCollection(object):
                 self.maxQueryDocSimilarity = similarity
         sortedScores = sorted(similarityMap.iteritems(), key=operator.itemgetter(1), reverse=True)
         return sortedScores
-    
-    
-    
+
     def getDocumentSimilarity(self, queryTermsMap, trainDoc):
         tfIdfHelper = tfidf(self.wordDF, self.numDocs, self.meanDocLen)
         similarity = 0.0
@@ -255,7 +243,7 @@ class createCollection(object):
             if queryTermsMap.has_key(word):
                 similarity += tfIdfHelper.getTfIdf(queryTermsMap[word],word, trainDoc)
         return similarity
-    
+
     def updateCenterScores(self, centers, averageCenterLen):
         if self.centersCalculated:
             return
@@ -268,13 +256,13 @@ class createCollection(object):
             if self.trainDocs[j].centerScore > self.maxCenterScore:
                 self.maxCenterScore = self.trainDocs[j].centerScore
         self.centersCalculated = True
-        
+
     def getCategory(self, k, query, sortedScores, weighted):
         if weighted is False:
             self.unweightedCategory(k, query, sortedScores)
         else:
             self.simpleWeightedCategory(k, query, sortedScores)
-    
+
     def unweightedCategory(self, k, query, sortedScores):
         tags = {}
         i = 0
@@ -289,7 +277,7 @@ class createCollection(object):
                 tags[category] = 1
             i += 1
         query.inferredCategory = self.maxCategory(tags)
-        
+
     def maxCategory(self, categoryScores):
         maxScore = 0.0
         maxCategory = None
@@ -300,8 +288,7 @@ class createCollection(object):
         if maxCategory is None:
             return None
         return self.categoryNames[maxCategory]
-    
-    
+
     def simpleWeightedCategory(self, k, query, sortedScores):
         tags = {}
         i = 0
@@ -311,9 +298,9 @@ class createCollection(object):
             category = self.categories[key]
             if value <= 0.0:
                 if tags.has_key(category):
-                    tags[category] +=  1.0 
+                    tags[category] +=  1.0
                 else:
-                    tags[category] = 1.0 
+                    tags[category] = 1.0
                 i += 1
                 continue
             if tags.has_key(category):
@@ -322,4 +309,3 @@ class createCollection(object):
                 tags[category] = 1.0 + value*1000.0
             i += 1
         query.inferredCategory = self.maxCategory(tags)
-       

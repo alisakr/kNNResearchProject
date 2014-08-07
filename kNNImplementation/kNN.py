@@ -12,7 +12,7 @@ import scipy.special as sps
 import numpy as np
 import matplotlib.pyplot as plt
 import collections
-import random 
+import random
 import re
 import optparse
 import nltk
@@ -54,7 +54,6 @@ def get_tokens(text):
     tokens = nltk.word_tokenize(no_punctuation)
     return tokens
 
-
 def extract_number(s):
     num = re.sub("[^0-9.]", " ", s)
     if num is None:
@@ -78,9 +77,8 @@ def getNumTests(testset, numTests):
         numTests = len(testset.data)
     if numTests > len(testset.data):
         numTests = len(testset.data)
-    numTests = int(numTests) 
+    numTests = int(numTests)
     return numTests
-
 
 def centroidKNN(testset, dataCollection, k, beta, numDocs, numWords, harmonicMean, selection, distributed, numTests= "All"):
     categories = dataCollection.categoryNames
@@ -105,26 +103,23 @@ def centroidKNN(testset, dataCollection, k, beta, numDocs, numWords, harmonicMea
     accuracy = 100.0*float(numCorrect)/float(numTests)
     print str(accuracy)
     return accuracyByCategory(queryList, categories)
- 
-        
-        
 
 def testBasicKNN(testset, dataCollection, k,weighted, distributed, numTests = "All"):
-        numTests = getNumTests(testset, numTests)
-        queryList = getQueries(testset, numTests, distributed)
-        numCorrect = 0
-        categories = dataCollection.categoryNames
-        for i in xrange(numTests):
-            query = queryList[i]
-            dataCollection.simpleKNN(k, query, weighted)
-            if query.inferredCategory is None:
-                print "inferred category was none"
-                continue
-            if str(query.inferredCategory).startswith(query.category):
-                numCorrect +=1
-        accuracy = 100.0*float(numCorrect)/float(numTests)
-        print str(accuracy)
-        return accuracyByCategory(queryList, categories)
+    numTests = getNumTests(testset, numTests)
+    queryList = getQueries(testset, numTests, distributed)
+    numCorrect = 0
+    categories = dataCollection.categoryNames
+    for i in xrange(numTests):
+        query = queryList[i]
+        dataCollection.simpleKNN(k, query, weighted)
+        if query.inferredCategory is None:
+            print "inferred category was none"
+            continue
+        if str(query.inferredCategory).startswith(query.category):
+            numCorrect +=1
+    accuracy = 100.0*float(numCorrect)/float(numTests)
+    print str(accuracy)
+    return accuracyByCategory(queryList, categories)
 
 def accuracyByCategory(queries, categoryNames):
     categoryMap = {}
@@ -155,12 +150,13 @@ def randomizeTrainTags(trainingSet, percentRandomize):
 def makeRandom():
     randomizeAnswer = raw_input("randomize part of the training set (y/n) (default = no): " )
     randomizeAnswer = randomizeAnswer.lower()
-    answer = yesOrNo(randomizeAnswer)  
+    answer = yesOrNo(randomizeAnswer)
     if answer is True:
         question = "percent of the training set to be randomized: "
         errorMessage = "invalid percent, type new percent randomized: "
         return int(getNumber(question, errorMessage))
     return 0
+
 def getK():
     question = "integer value of k for all kNN: "
     errorMessage = "invalid k, give different value: "
@@ -175,7 +171,7 @@ def getLinearInterpolationBeta():
     question = "beta for linear interpolation of cnkNN(0.0 <= beta <= 1.0): "
     errorMessage = "invalid, give new beta:"
     return getNumber(question, errorMessage)
-    
+
 def getQueries(testset, numQueries, evenDistribute=False):
     if evenDistribute:
         return getDistributedQueries(testset, numQueries)
@@ -194,7 +190,7 @@ def getDistributedQueries(testset, numQueries):
     numCategories = len(testset.target_names)
     queriesPerTag = numQueries/numCategories
     i = 0
-    j = 0 
+    j = 0
     tagTestsMap = {}
     queryList = []
     while j < numQueries:
@@ -218,10 +214,6 @@ def getDistributedQueries(testset, numQueries):
         queryList.append(query)
     return queryList
 
-    
-        
-
-
 def getNumber(userQuestion, errorMessage):
     input = raw_input(userQuestion)
     number = extract_number(input)
@@ -234,21 +226,21 @@ def numQueries():
     question = "how many total test queries would you like to run?"
     errorMessage = "try again, how many total test queries would you like to run"
     return getNumber(question, errorMessage)
-    
+
 def use20newsgroups():
     answer = raw_input("would you like to use the default, 20newsgroups, dataset (y/n)?")
     return yesOrNo(answer)
-    
+
 def yesOrNo(answer):
     answer = answer.lower()
     if answer.find("y") != -1:
         return True
     return False
+
 def evenDistribution():
     answer = raw_input("would you like test queries to be evenly distributed by category (y/n)?")
     return yesOrNo(answer)
 
-    
 if __name__ == '__main__':
     useNewsgroups= use20newsgroups()
     evenDistributed = evenDistribution()
@@ -269,15 +261,15 @@ if __name__ == '__main__':
         randomizeTrainTags(trainingSet, randomize)
     data  = createCollection(trainingSet)
     print "AT "+ str(randomize) +"% RANDOM and " + " K =" + str(k)
-    print  " weighted KNN was " 
+    print  " weighted KNN was "
     wKNN = testBasicKNN(testSet, data, k, True, evenDistributed, numTests)
-    print " weighted cnKNN was.. " 
+    print " weighted cnKNN was.. "
     wcnKNN = centroidKNN(testSet, data, k, 0.0, 2000, 250, False, True, evenDistributed, numTests)
-    print  " unweighted KNN was.. " 
+    print  " unweighted KNN was.. "
     kNN = testBasicKNN(testSet, data, k, False, evenDistributed, numTests)
-    print " unweighted cnKNN was.." 
+    print " unweighted cnKNN was.."
     cnKNN = centroidKNN(testSet, data, k, 0.0, 2000, 250, True, True, evenDistributed, numTests)
-    print "tag: kNN  cnKNN wKNN wcnKNN "    
+    print "tag: kNN  cnKNN wKNN wcnKNN "
     kNNs = 0
     wkNNs = 0
     cnkNNs = 0
@@ -295,7 +287,7 @@ if __name__ == '__main__':
         output += str(kNN[category]) + " "
         output += str(cnKNN[category]) + " "
         output += str(wKNN[category]) + " "
-        output += str(wcnKNN[category]) + " " 
+        output += str(wcnKNN[category]) + " "
         print output
     explanation = "below comparison is the number of categories"
     explanation = explanation + " each scheme performed better than the scheme"
@@ -303,9 +295,3 @@ if __name__ == '__main__':
     print explanation
     print "kNN v. cnKNN " + str(kNNs) + " v " + str(cnkNNs)
     print "wkNN v wcnKNN " + str(wkNNs) + " v " + str(wcnkNNs)
-        
-            
-        
-   
-
-

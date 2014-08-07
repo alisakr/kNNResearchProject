@@ -16,7 +16,7 @@ class Query(object):
         self.category = category
         self.inferredCategory = None
         self.addWordsFromText()
-    
+
     def addWord(self, word):
         word = stemmedWord(word)
         if self.containsTerm(word):
@@ -25,17 +25,17 @@ class Query(object):
             self.tfMap[word] = 1
             self.uniqueWords +=1
         self.wordCount +=1
-        
+
     def containsTerm(self, word):
         for key in self.tfMap.keys():
             if key is word:
                 return True
         return False
-    
+
     def addWords(self, words):
         for word in words:
             self.addWord(word)
-    
+
     def addWordsFromText(self):
         words = self.text.split()
         self.addWords(words)

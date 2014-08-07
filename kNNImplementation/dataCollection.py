@@ -6,7 +6,7 @@ Created on Jul 26, 2014
 import scipy.special as sps
 import numpy as np
 import matplotlib.pyplot as plt
-import collections 
+import collections
 import re
 import nltk
 import string
@@ -17,12 +17,10 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from collections import Counter
 from trainingDoc import trainingDoc
 
-
 class dataCollection(object):
     '''
     classdocs
     '''
-
 
     def __init__(self, dataset):
         self.trainDocs = {}
@@ -30,12 +28,11 @@ class dataCollection(object):
         self.dataset = dataset
         self.wordsList = None
         self.docVectors = None
-        self.numDocs = 0 
+        self.numDocs = 0
         self.wordsToNumber = {}
         self.setWords()
         self.meanDocLen = 0.0
-        
-    
+
     def setWords(self):
         self.docVectors = self.vectorizer.fit_transform(self.dataset.data)
         tf_transformer = TfidfTransformer(use_idf=False).fit(self.docVectors)
@@ -45,19 +42,19 @@ class dataCollection(object):
         self.wordsList = self.vectorizer.get_feature_names()
         self.createWordNumberMap()
         self.createTrainDocs()
-    
+
     def createWordNumberMap(self):
-        i = 0 
+        i = 0
         for word in self.wordsList:
             self.wordsToNumber[word] = i
             i +=1
-    
+
     def findMostSimilarDocuments(self, text):
         return None
-    
+
     def trainDocTest(self):
         self.IDs()
-        
+
     def extract_number(self, s):
         num = re.sub("[^0-9.]", " ", s)
         if re.search("\.", num):
@@ -66,10 +63,10 @@ class dataCollection(object):
             if re.search("[0-9]", num) is None:
                 return None
             return int(num)
-    
+
     def IDs(self):
         list = str(self.docVectors).splitlines()
-        i = 0 
+        i = 0
         for node in list:
             if i > 10:
                 break
@@ -86,13 +83,13 @@ class dataCollection(object):
                 output = output + word + " "
             print output
             print output2
-            i += 1 
-    
+            i += 1
+
     def createTrainDocs(self):
         docTermFreqs = str(self.docVectors).splitlines()
         prevDoc = 0
         currentDocLen = 0
-        sumDocLens = 0 
+        sumDocLens = 0
         termsMap = {}
         for elem in docTermFreqs:
             valueList = self.getTrainDocData(elem)
@@ -116,7 +113,7 @@ class dataCollection(object):
         self.numDocs = len(self.trainDocs.keys())
         self.meanDocLen = float(sumDocLens)/float(self.numDocs)
         print "mean Doc Length is " + str(self.meanDocLen)
-    
+
     def getTrainDocData(self, docTermFreq):
         words = str(docTermFreq).split()
         docID = self.extract_number(words[0])
@@ -125,6 +122,6 @@ class dataCollection(object):
         termID = self.extract_number(words[1])
         freq = self.extract_number(words[2])
         return [docID, termID, freq]
+
     def testFunction(self):
         return None
-             
