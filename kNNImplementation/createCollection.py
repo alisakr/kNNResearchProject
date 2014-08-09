@@ -94,6 +94,7 @@ class createCollection(object):
             i += 1
             if i >= k:
                 return maxScore
+
     def getMaxQueryScore(self, sortedScores):
         for key, value in sortedScores:
             return value

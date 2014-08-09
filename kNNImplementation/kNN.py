@@ -3,11 +3,6 @@ Created on Jul 25, 2014
 
 @author: alisakr
 '''
-'''
-Created on Jul 25, 2014
-
-@author: alisakr
-'''
 import scipy.special as sps
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,6 +22,7 @@ from dataCollection import dataCollection
 from createCollection import createCollection
 from Query import Query
 from CenterQuery import *
+from LineDataset import LineDataset
 
 def newCategory(categoryNum, numCategories):
     newCategory = random.randint(0, numCategories-2)
@@ -136,16 +132,20 @@ def accuracyByCategory(queries, categoryNames):
             if category.endswith(query.inferredCategory):
                 categoryNumRight[category] += 1
     for category in categoryNames:
-        categoryMap[category] = 100.0*float(categoryNumRight[category])/float(categoryNumQueries[category])
+        denom = float(categoryNumQueries[category])
+        if denom == 0:
+            categoryMap[category] = 0.0
+        else:
+            categoryMap[category] = 100.0*float(categoryNumRight[category])/denom
     return categoryMap
 
-def randomizeTrainTags(trainingSet, percentRandomize):
-    numCategories = len(trainingSet.target_names)
-    for i in xrange(len(trainingSet.target)):
+def randomizeTrainTags(trainSet, percentRandomize):
+    numCategories = len(trainSet.target_names)
+    for i in xrange(len(trainSet.target)):
         modulus = i%100
         if modulus < percentRandomize:
-            trainingSet.target[i] = newCategory(trainingSet.target[i], numCategories)
-    return trainingSet
+            trainSet.target[i] = newCategory(trainSet.target[i], numCategories)
+    return trainSet
 
 def makeRandom():
     randomizeAnswer = raw_input("randomize part of the training set (y/n) (default = no): " )
@@ -242,24 +242,22 @@ def evenDistribution():
     return yesOrNo(answer)
 
 if __name__ == '__main__':
-    useNewsgroups= use20newsgroups()
+    useNewsgroups = use20newsgroups()
     evenDistributed = evenDistribution()
     k = getK()
     numTests = numQueries()
     randomize = makeRandom()
     if useNewsgroups:
-        trainingSet = fetch_20newsgroups(subset='train', remove=('headers', 'footers', 'quotes'), shuffle = True, random_state=42)
+        trainSet = fetch_20newsgroups(subset='train', remove=('headers', 'footers', 'quotes'), shuffle = True, random_state=42)
         testSet = fetch_20newsgroups(subset='test', remove=('headers', 'footers', 'quotes'), shuffle = True, random_state = 42)
     else:
-        print "we need you to provide a folder containing the training set, and another containing the test set"
-        print "format of folder available at http://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_files.html"
-        trainSetFolder = raw_input("What is the folder containing the training set?")
-        trainingSet = sklearn.datasets.load_files(trainSetFolder, shuffle = True, random_state = 42)
-        testSetFolder = raw_input("What is the folder containing the test set?")
-        testSet = sklearn.datasets.load_files(testSetFolder, shuffler = True, random_state=42)
+        datasetFolder = raw_input("What is the path to the line corpus .dat file? ")
+    lineDataset = LineDataset(datasetFolder)
+    trainSet = lineDataset.trainDocs()
+    testSet = lineDataset.testDocs()
     if randomize > 0:
-        randomizeTrainTags(trainingSet, randomize)
-    data  = createCollection(trainingSet)
+        randomizeTrainTags(trainSet, randomize)
+    data  = createCollection(trainSet)
     print "AT "+ str(randomize) +"% RANDOM and " + " K =" + str(k)
     print  " weighted KNN was "
     wKNN = testBasicKNN(testSet, data, k, True, evenDistributed, numTests)
